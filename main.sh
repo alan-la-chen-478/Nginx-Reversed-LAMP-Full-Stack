@@ -1,0 +1,164 @@
+#!/bin/bash
+
+# check ubuntu version
+lsb_release -a
+
+# secondary user
+adduser gummi
+usermod -aG sudo gummi
+
+# update server
+sudo add-apt-repository -y ppa:nginx/development
+sudo add-apt-repository -y ppa:ondrej/php
+sudo add-apt-repository -y ppa:ondrej/apache2
+sudo add-apt-repository -y ppa:chris-lea/redis-server
+sudo add-apt-repository -y ppa:certbot/certbot
+sudo apt-get -y update
+sudo apt-get -y upgrade
+
+# swap file for low memory server
+sudo fallocate -l 1G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo swapon --show
+sudo cp /etc/fstab /etc/fstab.bak
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+# fail 2 ban
+sudo apt-get -y install fail2ban
+
+# automatic update
+sudo apt-get -y install unattended-upgrades
+
+# firewall
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw --force enable
+
+# timezone
+sudo timedatectl set-timezone America/Vancouver
+sudo apt-get -y install ntp
+
+# basic modules
+sudo apt-get -y install git tmux vim curl wget zip unzip htop dos2unix whois bc
+
+# Enable sftp
+sudo addgroup -q --system sftpUsers
+sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.back
+sudo sed -i "s%Subsystem sftp /usr/lib/openssh/sftp-server%Subsystem sftp internal-sftp%" /etc/ssh/sshd_config
+sftpConfig=$(<./stubs/sftpUsers.conf)
+sudo echo -e "$sftpConfig" >> /etc/ssh/sshd_config
+sudo service ssh reload
+
+# apache
+sudo apt-get -y install apache2 libapache2-mod-fastcgi build-essential apache2-dev apache2-utils
+sudo sed -i "s/Listen 80/Listen 8080/" /etc/apache2/ports.conf
+echo "ServerName localhost" >> /etc/apache2/conf-available/server-name.conf
+sudo a2enconf server-name
+sudo a2dissite 000-default
+sudo hostnamectl set-hostname localhost
+sudo service apache2 restart
+
+# php 7
+sudo apt-get -y install php7.1-fpm php7.1-cli php7.1-mcrypt php7.1-gd php7.1-mysql
+sudo apt-get -y install php7.1-pgsql php7.1-imap php-memcached php7.1-mbstring php7.1-xml
+sudo apt-get -y install php7.1-curl php7.1-bcmath php7.1-sqlite3 php7.1-xdebug php7.1-zip
+ps aux | grep php
+
+# update some ini setting
+sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 8M/" /etc/php/7.1/fpm/php.ini
+
+# connect apache to php
+sudo a2enmod actions
+sudo a2enmod proxy_fcgi setenvif
+sudo a2enmod rewrite
+sudo a2enconf php7.1-fpm
+sudo cp /etc/apache2/mods-available/fastcgi.conf /etc/apache2/mods-available/fastcgi.conf.backup
+sudo cp ./stubs/fastcgi.conf -rf /etc/apache2/mods-available/fastcgi.conf
+
+# nginx
+sudo apt-get -y install nginx
+sudo rm /etc/nginx/sites-enabled/default
+
+# reverse proxy setup
+sudo wget https://github.com/gnif/mod_rpaf/archive/stable.zip
+sudo unzip stable.zip
+cd mod_rpaf-stable
+sudo make
+sudo make install
+cd ..
+sudo cp ./stubs/rpaf.load -rf /etc/apache2/mods-available/rpaf.load
+sudo cp ./stubs/rpaf.conf -rf /etc/apache2/mods-available/rpaf.conf
+sudo a2enmod rpaf
+sudo rm -Rf mod_rpaf-stable
+sudo rm -Rf stable.zip
+
+# restart
+sudo service nginx restart
+sudo service php7.1-fpm restart
+sudo service apache2 restart
+
+# mysql
+sudo apt-get -y install mysql-server
+sudo mysql_secure_installation
+
+# compposer
+sudo php -r "readfile('http://getcomposer.org/installer');" | sudo php -- --install-dir=/usr/bin/ --filename=composer
+
+# node
+sudo apt-get -y install build-essential libssl-dev
+sudo curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+nvm install node # no sudo...
+
+# laravel requirements
+sudo apt-get -y install redis-server supervisor sqlite3 memcached beanstalkd
+/etc/init.d/beanstalkd start
+
+# Let's Encrypt
+sudo apt-get -y install python-certbot-nginx python-certbot-apache
+sudo crontab -l | { cat; echo "15 3 * * * /usr/bin/certbot renew --quiet"; } | crontab -
+sudo crontab -l | { cat; echo "5 8 * * Sat /usr/bin/composer self-update -q"; } | crontab -
+#sudo crontab -e
+# >>> "15 3 * * * /usr/bin/certbot renew --quiet"
+
+# Diffie-Hellman Parameters
+sudo openssl dhparam -out /etc/ssl/certs/dhparam.pem 2048
+
+# Laravel Installer
+composer global require "laravel/installer"
+echo 'export PATH="$PATH:$HOME/.composer/vendor/bin"' >> ~/.bashrc
+source ~/.bashrc
+
+# Wp Installer
+sudo curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+sudo chmod +x wp-cli.phar
+sudo mv wp-cli.phar /usr/local/bin/wp
+
+# Global Userful Bash
+echo "alias nah=\"git reset --hard; git clean -df;\"" >> /etc/profile.d/shared-alias.sh
+
+# Root useful bash
+echo "alias retest=\"apachectl -t; nginx -t;\"" >> ~/.bash_aliases
+echo "alias reload=\"service apache2 reload; service nginx reload; service php7.1-fpm reload; ecoh 'Reloaded\!';\"" >> ~/.bash_aliases
+echo "alias restart=\"service apache2 restart; service nginx restart; service php7.1-fpm restart; ecoh 'Restarted\!';\"" >> ~/.bash_aliases
+
+# extra snippets
+sudo cp ./snippets/nginx-gzip.conf /etc/nginx/snippets/nginx-gzip.conf
+sudo cp ./snippets/agent-filters.conf /etc/nginx/snippets/agent-filters.conf
+sudo cp ./snippets/security.conf /etc/nginx/snippets/security.conf
+sudo cp ./snippets/static.conf /etc/nginx/snippets/static.conf
+sudo cp ./snippets/nginx-ssl.conf /etc/nginx/snippets/nginx-ssl.conf
+sudo cp ./snippets/proxy-params.conf /etc/nginx/snippets/proxy-params.conf
+
+# clean up
+sudo apt-get -y autoremove
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo service nginx restart
+sudo service php7.1-fpm restart
+sudo service apache2 restart

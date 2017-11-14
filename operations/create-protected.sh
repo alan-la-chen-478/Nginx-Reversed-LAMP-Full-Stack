@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [ "$PROTECTED" = true ] ; then
+    echo "$(tput setaf 1)Settingup Http password... $(tput sgr 0)"
     touch "${VHOST_PATH}.htpasswd"
     sudo htpasswd "${VHOST_PATH}.htpasswd" ${USER}
     sudo sed -i "s/# auth_basic /auth_basic /g" $CONF_FILE

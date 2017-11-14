@@ -4,6 +4,7 @@
 if [ -f "$CONF_FILE" ]; then
     echo "$CONF_FILE already exists."
 else
+    echo "$(tput setaf 1)Creating Nginx config... $(tput sgr 0)"
     sudo cp ./templates/apache-nginx-vhost.conf $CONF_FILE
 
     if [ "$WWW" = true ]; then
@@ -31,6 +32,7 @@ fi
 if [ -f "$APACHE_FILE" ]; then
     echo "'$APACHE_FILE' already exists."
 else
+    echo "$(tput setaf 1)Creating Apache config... $(tput sgr 0)"
     sudo cp ./templates/apache-vhost.conf $APACHE_FILE
     sudo sed -i "s/{{DOMAIN}}/${DOMAIN}/g" $APACHE_FILE
     sudo sed -i "s#{{SERVED_PATH}}#${SERVED_PATH}#g" $APACHE_FILE

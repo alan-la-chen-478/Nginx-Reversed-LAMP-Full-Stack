@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "$(tput setaf 1)Creating sample files... $(tput sgr 0)"
+
 read -r -d '' VAR <<- EOM
 <!DOCTYPE html>
 <html>

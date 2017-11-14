@@ -3,6 +3,7 @@
 if [ -d "$VHOST_PATH" ]; then
     echo "'$VHOST_PATH' already exists."
 else
+    echo "$(tput setaf 1)Creating site folders... $(tput sgr 0)"
     sudo mkdir -p $SERVED_PATH
     sudo mkdir -p "${VHOST_PATH}logs"
 

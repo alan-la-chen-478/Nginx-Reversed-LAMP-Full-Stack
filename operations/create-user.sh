@@ -1,6 +1,7 @@
 #!/bin/bash
 
 if [ -z "$(getent passwd $USER)" ]; then
+    echo "$(tput setaf 1)Creating New User... $(tput sgr 0)"
     sudo adduser --gecos "" $USER
     sudo usermod -d $HOME_DIR $USER
 

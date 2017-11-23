@@ -8,8 +8,8 @@ else
 
     if [ "$WWW" = true ]; then
         sudo sed -i "s/# server { # WWW/server { # WWW/g" $CONF_FILE
-        sudo sed -i "s/# server_name www.${DOMAIN}; # WWW/server_name www.${DOMAIN}; # WWW/g" $CONF_FILE
-        sudo sed -i "s/# return 301 \$scheme:\/\/${DOMAIN}\$request_uri; # WWW/return 301 \$scheme:\/\/${DOMAIN}\$request_uri; # WWW/g" $CONF_FILE
+        sudo sed -i "s/# server_name www.{{DOMAIN}}; # WWW/server_name www.{{DOMAIN}}; # WWW/g" $CONF_FILE
+        sudo sed -i "s/# return 301 \$scheme:\/\/{{DOMAIN}}\$request_uri; # WWW/return 301 \$scheme:\/\/{{DOMAIN}}\$request_uri; # WWW/g" $CONF_FILE
         sudo sed -i "s/# } # WWW/} # WWW/g" $CONF_FILE
     fi
 

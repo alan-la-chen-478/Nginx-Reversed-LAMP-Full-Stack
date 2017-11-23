@@ -31,7 +31,7 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 
 # fail 2 ban
 echo "$(tput setaf 1)Install securities... $(tput sgr 0)"
-sudo apt-get -y install fail2ban unattended-upgrades
+sudo apt-get -y install fail2ban unattended-upgrades landscape-common
 
 # firewall
 echo "$(tput setaf 1)Setup Firewall... $(tput sgr 0)"
@@ -166,8 +166,9 @@ echo "alias nah=\"git reset --hard; git clean -df;\"" >> /etc/profile.d/shared-a
 
 # Root useful bash
 echo "alias retest=\"apachectl -t; nginx -t;\"" >> ~/.bash_aliases
-echo "alias reload=\"service apache2 reload; service nginx reload; service php7.1-fpm reload; ecoh 'Reloaded\!';\"" >> ~/.bash_aliases
-echo "alias restart=\"service apache2 restart; service nginx restart; service php7.1-fpm restart; ecoh 'Restarted\!';\"" >> ~/.bash_aliases
+echo "alias reload=\"service apache2 reload; service nginx reload; service php7.1-fpm reload; echo 'Reloaded\!';\"" >> ~/.bash_aliases
+echo "alias restart=\"service apache2 restart; service nginx restart; service php7.1-fpm restart; echo 'Restarted\!';\"" >> ~/.bash_aliases
+echo "alias stats=\"landscape-sysinfo\"" >> ~/.bash_aliases
 
 # extra snippets
 echo "$(tput setaf 1)Copy Nginx snippets... $(tput sgr 0)"

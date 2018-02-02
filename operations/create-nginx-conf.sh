@@ -3,7 +3,7 @@
 if [ -f "$CONF_FILE" ]; then
     echo "'$CONF_FILE' already exists."
 else
-    echo "$(tput setaf 1)Creating Nginx config... $(tput sgr 0)"
+    echo "$(tput setaf 2)$(tput bold)Creating Nginx config... $(tput sgr 0)"
     sudo cp ./templates/nginx-vhost.conf $CONF_FILE
 
     if [ "$WWW" = true ]; then

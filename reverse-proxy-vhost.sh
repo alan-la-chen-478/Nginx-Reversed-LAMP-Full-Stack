@@ -47,4 +47,4 @@ APACHE_FILE="/etc/apache2/sites-available/${DOMAIN}.conf"
 # reload
 . ./operations/test-and-reload.sh
 
-echo "$(tput setaf 1)Boom DONE\! $(tput sgr 0)"
+echo "$(tput setaf 2)$(tput bold)Boom DONE\! $(tput sgr 0)"

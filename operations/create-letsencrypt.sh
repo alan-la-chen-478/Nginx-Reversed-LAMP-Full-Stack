@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$SSL" = true ] ; then
-    echo "$(tput setaf 1)Creating SSL certificates... $(tput sgr 0)"
+    echo "$(tput setaf 2)$(tput bold)Creating SSL certificates... $(tput sgr 0)"
     sudo certbot-auto certonly --nginx -d ${DOMAIN} --agree-tos
 
     # redirect

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "$(tput setaf 1)Test and reloading services... $(tput sgr 0)"
+echo "$(tput setaf 2)$(tput bold)Test and reloading services... $(tput sgr 0)"
 sudo nginx -t
 sudo apachectl -t
 sudo service php7.1-fpm reload

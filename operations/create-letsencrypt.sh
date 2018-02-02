@@ -2,7 +2,7 @@
 
 if [ "$SSL" = true ] ; then
     echo "$(tput setaf 1)Creating SSL certificates... $(tput sgr 0)"
-    sudo certbot certonly --nginx -d ${DOMAIN} --agree-tos
+    sudo certbot-auto certonly --nginx -d ${DOMAIN} --agree-tos
 
     # redirect
     sudo sed -i "s/# server { # SSL/server { # SSL/g" $CONF_FILE

@@ -15,7 +15,6 @@ sudo add-apt-repository -y ppa:nginx/development
 sudo add-apt-repository -y ppa:ondrej/php
 sudo add-apt-repository -y ppa:ondrej/apache2
 sudo add-apt-repository -y ppa:chris-lea/redis-server
-sudo add-apt-repository -y ppa:certbot/certbot
 sudo apt-get -y update
 sudo apt-get -y upgrade
 
@@ -137,12 +136,14 @@ echo "$(tput setaf 1)Install Laravel requirements... $(tput sgr 0)"
 sudo apt-get -y install redis-server supervisor sqlite3 memcached beanstalkd
 /etc/init.d/beanstalkd start
 
-# Let's Encrypt
+# Let's Encrypt (Using certbot-auto to always have latest version)
 echo "$(tput setaf 1)Install Let's Encrypt... $(tput sgr 0)"
-sudo apt-get -y install python-certbot-nginx python-certbot-apache
-sudo crontab -l | { cat; echo "15 3 * * * /usr/bin/certbot renew --quiet"; } | crontab -
+sudo wget https://dl.eff.org/certbot-auto
+sudo chmod a+x ./certbot-auto
+sudo mv ./certbot-auto /usr/bin/
+sudo crontab -l | { cat; echo "15 3 * * * /usr/bin/certbot-auto renew --quiet --renew-hook 'service nginx reload'"; } | crontab -
 #sudo crontab -e
-# >>> "15 3 * * * /usr/bin/certbot renew --quiet"
+# >>> "15 3 * * * /usr/bin/certbot-auto renew --quiet"
 
 # Diffie-Hellman Parameters
 echo "$(tput setaf 1)Generate dhparam.pem... $(tput sgr 0)"

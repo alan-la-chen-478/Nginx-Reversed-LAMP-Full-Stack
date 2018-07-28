@@ -11,6 +11,7 @@ usermod -aG sudo gummi
 
 # update server
 echo "$(tput setaf 2)$(tput bold)Update apt repositories... $(tput sgr 0)"
+sudo apt-get install -y software-properties-common
 sudo add-apt-repository -y ppa:nginx/development
 sudo add-apt-repository -y ppa:ondrej/php
 sudo add-apt-repository -y ppa:ondrej/apache2
@@ -20,13 +21,18 @@ sudo apt-get -y upgrade
 
 # swap file for low memory server
 echo "$(tput setaf 2)$(tput bold)Create swap 1G file... $(tput sgr 0)"
-sudo fallocate -l 1G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-sudo swapon --show
-sudo cp /etc/fstab /etc/fstab.bak
-echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+
+if [ -f /swapfile ]; then
+    echo "'/swapfile' already exists."
+else
+    sudo fallocate -l 1G /swapfile
+    sudo chmod 600 /swapfile
+    sudo mkswap /swapfile
+    sudo swapon /swapfile
+    sudo swapon --show
+    sudo cp /etc/fstab /etc/fstab.bak
+    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+fi
 
 # fail 2 ban
 echo "$(tput setaf 2)$(tput bold)Install securities... $(tput sgr 0)"
@@ -59,7 +65,13 @@ sudo service ssh reload
 
 # apache
 echo "$(tput setaf 2)$(tput bold)Install Apache... $(tput sgr 0)"
-sudo apt-get -y install apache2 libapache2-mod-fastcgi build-essential apache2-dev apache2-utils
+sudo apt-get -y install apache2 build-essential apache2-dev apache2-utils
+
+wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+sudo dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+sudo apt install -f
+sudo rm -Rf libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+
 sudo sed -i "s/Listen 80/Listen 8080/" /etc/apache2/ports.conf
 echo "ServerName localhost" >> /etc/apache2/conf-available/server-name.conf
 sudo a2enconf server-name
@@ -170,6 +182,7 @@ echo "alias retest=\"apachectl -t; nginx -t;\"" >> ~/.bash_aliases
 echo "alias reload=\"service apache2 reload; service nginx reload; service php7.1-fpm reload; echo 'Reloaded\!';\"" >> ~/.bash_aliases
 echo "alias restart=\"service apache2 restart; service nginx restart; service php7.1-fpm restart; echo 'Restarted\!';\"" >> ~/.bash_aliases
 echo "alias stats=\"landscape-sysinfo\"" >> ~/.bash_aliases
+source ~/.bash_aliases
 
 # extra snippets
 echo "$(tput setaf 2)$(tput bold)Copy Nginx snippets... $(tput sgr 0)"

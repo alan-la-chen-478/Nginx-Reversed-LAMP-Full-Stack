@@ -15,10 +15,3 @@ Thumbs.db
 # Sublime Text files
 *.sublime-project
 *.sublime-workspace
-
-# Sass Cache remove
-*.sass-cache
-
-# Ignore the Node Modules folder
-node_modules/
-phantomas/

@@ -203,3 +203,6 @@ sudo service php7.1-fpm restart
 sudo service apache2 restart
 
 echo "$(tput setaf 2)$(tput bold)Boom DONE\! $(tput sgr 0)"
+
+
+imagick

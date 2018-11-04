@@ -1,0 +1,33 @@
+echo "   ____                       ____    __          "
+echo "  / __/__ _____  _____ ____  / __/__ / /___ _____ "
+echo " _\ \/ -_) __/ |/ / -_) __/ _\ \/ -_) __/ // / _ \\"
+echo "/___/\__/_/  |___/\__/_/   /___/\__/\__/\_,_/ .__/"
+echo "                                           /_/    "
+ss-header "[Server Setup Commands:]"
+ss-text "[help]     - Display a list of available commands."
+ss-text "[all]      - Run through all commands marked with * below."
+ss-text "[init]     - *Initialize server. Update and install basic packages, firewall, timezone, security, sftp etc..."
+ss-text "[add-swap] - *Install swap file."
+ss-text "[php-an]   - *Install PHP and use Apache as reverse proxy on Nginx."
+ss-text "[mysql]    - *Install MySQL server."
+ss-text "[composer] - *Install composer (php package manager)."
+ss-text "[node]     - *Install NodeJS (js package manager) and pm2."
+ss-text "[laravel]  - *Install Laravel installer and superviser."
+ss-text "[wp]       - *Install WP Cli."
+ss-text "[ssl]      - *Install Lets Encrypt."
+
+ss-text ""
+
+ss-header "[Vhost Commands:]"
+ss-text "[nginx-vhost]          - Open specified port on the firewall."
+ss-text "[apache-vhost]         - Close specified port on the firewall."
+ss-text "[reverse-apache-vhost] - Add an user account on the server."
+
+ss-text ""
+
+ss-header "[Utility Commands:]"
+ss-text "[open-port]   - Open specified port on the firewall."
+ss-text "[close-port]  - Close specified port on the firewall."
+ss-text "[add-account] - Add an user account on the server."
+
+ss-text ""

@@ -1,0 +1,2 @@
+# Update composer core
+5 4 * * Sat /usr/bin/composer self-update -q

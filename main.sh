@@ -2,12 +2,12 @@
 
 # check ubuntu version
 echo "$(tput setaf 2)$(tput bold)Prepare to start... $(tput sgr 0)"
-lsb_release -a
+sudo lsb_release -a
 
 # secondary user
 echo "$(tput setaf 2)$(tput bold)Setup secondary sudo user... $(tput sgr 0)"
-adduser --gecos "" gummi
-usermod -aG sudo gummi
+sudo adduser --gecos "" gummi
+sudo usermod -aG sudo gummi
 
 # update server
 echo "$(tput setaf 2)$(tput bold)Update apt repositories... $(tput sgr 0)"
@@ -16,6 +16,11 @@ sudo add-apt-repository -y ppa:nginx/development
 sudo add-apt-repository -y ppa:ondrej/php
 sudo add-apt-repository -y ppa:ondrej/apache2
 sudo add-apt-repository -y ppa:chris-lea/redis-server
+sudo add-apt-repository -y main
+sudo add-apt-repository -y universe
+sudo add-apt-repository -y restricted
+sudo add-apt-repository -y multiverse
+
 sudo apt-get -y update
 sudo apt-get -y upgrade
 
@@ -58,22 +63,22 @@ sudo apt-get -y install git tmux vim curl wget zip unzip htop dos2unix whois bc
 echo "$(tput setaf 2)$(tput bold)Create sftp user group... $(tput sgr 0)"
 sudo addgroup -q --system sftpUsers
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.back
-sudo sed -i "s%Subsystem sftp /usr/lib/openssh/sftp-server%Subsystem sftp internal-sftp%" /etc/ssh/sshd_config
+# sudo sed -i "s%Subsystem sftp /usr/lib/openssh/sftp-server%Subsystem sftp internal-sftp%" /etc/ssh/sshd_config
 sftpConfig=$(<./stubs/sftpUsers.conf)
-sudo echo -e "$sftpConfig" >> /etc/ssh/sshd_config
+echo "$sftpConfig" | sudo tee --append /etc/ssh/sshd_config
 sudo service ssh reload
 
 # apache
 echo "$(tput setaf 2)$(tput bold)Install Apache... $(tput sgr 0)"
 sudo apt-get -y install apache2 build-essential apache2-dev apache2-utils
 
-wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
+sudo wget http://mirrors.kernel.org/ubuntu/pool/multiverse/liba/libapache-mod-fastcgi/libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
 sudo dpkg -i libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
 sudo apt install -f
 sudo rm -Rf libapache2-mod-fastcgi_2.4.7~0910052141-1.2_amd64.deb
 
 sudo sed -i "s/Listen 80/Listen 8080/" /etc/apache2/ports.conf
-echo "ServerName localhost" >> /etc/apache2/conf-available/server-name.conf
+echo "ServerName localhost" | sudo tee /etc/apache2/conf-available/server-name.conf
 sudo a2enconf server-name
 sudo a2dissite 000-default
 sudo hostnamectl set-hostname localhost
@@ -115,6 +120,9 @@ sudo cp ./stubs/rpaf.conf -rf /etc/apache2/mods-available/rpaf.conf
 sudo a2enmod rpaf
 sudo rm -Rf mod_rpaf-stable
 sudo rm -Rf stable.zip
+sudo service apache2 restart
+sudo apt-get -y install libtool-bin
+sudo libtool --finish /usr/lib/apache2/modules
 
 # restart
 echo "$(tput setaf 2)$(tput bold)Restarting services... $(tput sgr 0)"
@@ -132,7 +140,9 @@ sudo mysql_secure_installation
 # compposer
 echo "$(tput setaf 2)$(tput bold)Install Composer... $(tput sgr 0)"
 sudo php -r "readfile('http://getcomposer.org/installer');" | sudo php -- --install-dir=/usr/bin/ --filename=composer
-sudo crontab -l | { cat; echo "5 8 * * Sat /usr/bin/composer self-update -q"; } | crontab -
+sudo cp ./stubs/cron-composer /etc/cron.d/composer
+sudo mkdir ~/.composer/
+sudo chown -R $USER: ~/.composer/
 
 # node
 echo "$(tput setaf 2)$(tput bold)Install Node... $(tput sgr 0)"
@@ -146,16 +156,15 @@ nvm install node # no sudo...
 # laravel requirements
 echo "$(tput setaf 2)$(tput bold)Install Laravel requirements... $(tput sgr 0)"
 sudo apt-get -y install redis-server supervisor sqlite3 memcached beanstalkd
-/etc/init.d/beanstalkd start
+sudo /etc/init.d/beanstalkd start
 
 # Let's Encrypt (Using certbot-auto to always have latest version)
 echo "$(tput setaf 2)$(tput bold)Install Let's Encrypt... $(tput sgr 0)"
 sudo wget https://dl.eff.org/certbot-auto
 sudo chmod a+x ./certbot-auto
 sudo mv ./certbot-auto /usr/bin/
-sudo crontab -l | { cat; echo "15 3 * * * /usr/bin/certbot-auto renew --quiet --renew-hook 'service nginx reload'"; } | crontab -
-#sudo crontab -e
-# >>> "15 3 * * * /usr/bin/certbot-auto renew --quiet"
+sudo cp ./stubs/cron-certbot /etc/cron.d/certbot
+sudo serbot-auto --install-only
 
 # Diffie-Hellman Parameters
 echo "$(tput setaf 2)$(tput bold)Generate dhparam.pem... $(tput sgr 0)"
@@ -175,12 +184,12 @@ sudo mv wp-cli.phar /usr/local/bin/wp
 
 # Global Userful Bash
 echo "$(tput setaf 2)$(tput bold)Add Aliases... $(tput sgr 0)"
-echo "alias nah=\"git reset --hard; git clean -df;\"" >> /etc/profile.d/shared-alias.sh
+echo "alias nah=\"git reset --hard; git clean -df;\"" | sudo tee /etc/profile.d/shared-alias.sh
 
 # Root useful bash
-echo "alias retest=\"apachectl -t; nginx -t;\"" >> ~/.bash_aliases
-echo "alias reload=\"service apache2 reload; service nginx reload; service php7.1-fpm reload; echo 'Reloaded\!';\"" >> ~/.bash_aliases
-echo "alias restart=\"service apache2 restart; service nginx restart; service php7.1-fpm restart; echo 'Restarted\!';\"" >> ~/.bash_aliases
+echo "alias retest=\"sudo apachectl -t; sudo nginx -t;\"" >> ~/.bash_aliases
+echo "alias reload=\"sudo service apache2 reload;sudo service nginx reload;sudo service php7.1-fpm reload; echo 'Services Reloaded';\"" >> ~/.bash_aliases
+echo "alias restart=\"sudo service apache2 restart; sudo service nginx restart; sudo service php7.1-fpm restart; echo 'Services Restarted';\"" >> ~/.bash_aliases
 echo "alias stats=\"landscape-sysinfo\"" >> ~/.bash_aliases
 source ~/.bash_aliases
 

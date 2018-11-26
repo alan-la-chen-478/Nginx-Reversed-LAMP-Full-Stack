@@ -15,11 +15,11 @@ read -r -d '' VAR <<- EOM
 EOM
 
 if [ ! -f "${SERVED_PATH}index.php" ]; then
-    echo "${VAR}" > "${SERVED_PATH}index.php"
+    echo "${VAR}" | sudo tee "${SERVED_PATH}index.php"
     echo "'${SERVED_PATH}index.php' created."
 fi
 
 if [ ! -f "${SERVED_PATH}info.php" ]; then
-    echo "<?php phpinfo(); ?>" > "${SERVED_PATH}info.php"
+    echo "<?php phpinfo(); ?>" | sudo tee "${SERVED_PATH}info.php"
     echo "'${SERVED_PATH}info.php' created."
 fi

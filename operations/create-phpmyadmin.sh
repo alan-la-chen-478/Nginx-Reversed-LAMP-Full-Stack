@@ -9,6 +9,6 @@ if [[ $DOMAIN == *"phpmyadmin."* ]]; then
     sudo unzip -q phpmyadmin.zip -d phpmyadmin
     sudo rm phpmyadmin.zip
 
-    mv phpmyadmin/$phpmyadminFolderName/* "${SERVED_PATH}"
+    sudo mv phpmyadmin/$phpmyadminFolderName/* "${SERVED_PATH}"
     sudo rm -Rf phpmyadmin
 fi

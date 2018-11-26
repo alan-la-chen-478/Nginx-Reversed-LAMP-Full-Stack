@@ -164,7 +164,7 @@ sudo wget https://dl.eff.org/certbot-auto
 sudo chmod a+x ./certbot-auto
 sudo mv ./certbot-auto /usr/bin/
 sudo cp ./stubs/cron-certbot /etc/cron.d/certbot
-sudo serbot-auto --install-only
+sudo cerbot-auto --install-only
 
 # Diffie-Hellman Parameters
 echo "$(tput setaf 2)$(tput bold)Generate dhparam.pem... $(tput sgr 0)"

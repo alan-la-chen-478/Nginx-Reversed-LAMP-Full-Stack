@@ -17,9 +17,11 @@ EOM
 if [ ! -f "${SERVED_PATH}index.php" ]; then
     echo "${VAR}" | sudo tee "${SERVED_PATH}index.php"
     echo "'${SERVED_PATH}index.php' created."
+    sudo chown $USER: "${SERVED_PATH}index.php"
 fi
 
 if [ ! -f "${SERVED_PATH}info.php" ]; then
     echo "<?php phpinfo(); ?>" | sudo tee "${SERVED_PATH}info.php"
     echo "'${SERVED_PATH}info.php' created."
+    sudo chown $USER: "${SERVED_PATH}info.php"
 fi

@@ -5,9 +5,9 @@ echo "$(tput setaf 2)$(tput bold)Prepare to start... $(tput sgr 0)"
 sudo lsb_release -a
 
 # secondary user
-echo "$(tput setaf 2)$(tput bold)Setup secondary sudo user... $(tput sgr 0)"
-sudo adduser --gecos "" gummi
-sudo usermod -aG sudo gummi
+# echo "$(tput setaf 2)$(tput bold)Setup secondary sudo user... $(tput sgr 0)"
+# sudo adduser --gecos "" gummi
+# sudo usermod -aG sudo gummi
 
 # update server
 echo "$(tput setaf 2)$(tput bold)Update apt repositories... $(tput sgr 0)"
@@ -164,7 +164,7 @@ sudo wget https://dl.eff.org/certbot-auto
 sudo chmod a+x ./certbot-auto
 sudo mv ./certbot-auto /usr/bin/
 sudo cp ./stubs/cron-certbot /etc/cron.d/certbot
-sudo cerbot-auto --install-only
+sudo certbot-auto --install-only --non-interactive
 
 # Diffie-Hellman Parameters
 echo "$(tput setaf 2)$(tput bold)Generate dhparam.pem... $(tput sgr 0)"

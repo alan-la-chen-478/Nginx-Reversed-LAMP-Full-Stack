@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # configurations
-DOMAIN=test2.gummi.io
-USER=gummi
-WWW=false
-SSH=true
+DOMAIN=domain.com
+USER=account_name
+WWW=true
+SSH=false
 SFTP=true
 SSL=true
 PROTECTED=false

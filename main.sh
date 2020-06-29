@@ -4,6 +4,13 @@
 echo "$(tput setaf 2)$(tput bold)Prepare to start... $(tput sgr 0)"
 sudo lsb_release -a
 
+# update ubuntu
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo apt-get -y dist-upgrade
+sudo apt install -y update-manager-core
+sudo do-release-upgrade -d
+
 # secondary user
 # echo "$(tput setaf 2)$(tput bold)Setup secondary sudo user... $(tput sgr 0)"
 # sudo adduser --gecos "" gummi
@@ -63,9 +70,7 @@ sudo apt-get -y install git tmux vim curl wget zip unzip htop dos2unix whois bc
 echo "$(tput setaf 2)$(tput bold)Create sftp user group... $(tput sgr 0)"
 sudo addgroup -q --system sftpUsers
 sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.back
-# sudo sed -i "s%Subsystem sftp /usr/lib/openssh/sftp-server%Subsystem sftp internal-sftp%" /etc/ssh/sshd_config
-sftpConfig=$(<./stubs/sftpUsers.conf)
-echo "$sftpConfig" | sudo tee --append /etc/ssh/sshd_config
+sudo cp ./stubs/sftpUsers.conf /etc/ssh/sshd_config.d/sftpUsers.conf
 sudo service ssh reload
 
 # apache
@@ -86,9 +91,9 @@ sudo service apache2 restart
 
 # php 7
 echo "$(tput setaf 2)$(tput bold)Install PHP7.1... $(tput sgr 0)"
-sudo apt-get -y install php7.1-fpm php7.1-cli php7.1-mcrypt php7.1-gd php7.1-mysql
-sudo apt-get -y install php7.1-pgsql php7.1-imap php-memcached php7.1-mbstring php7.1-xml
-sudo apt-get -y install php7.1-curl php7.1-bcmath php7.1-sqlite3 php7.1-xdebug php7.1-zip
+sudo apt-get -y install php-fpm php-cli php-gd php-mysql
+sudo apt-get -y install php-pgsql php-imap php-memcached php-mbstring php-xml
+sudo apt-get -y install php-curl php-bcmath php-sqlite3 php-xdebug php-zip
 ps aux | grep php
 
 # update some ini setting
@@ -98,7 +103,7 @@ sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 8M/" /etc/php/7.1/
 sudo a2enmod actions
 sudo a2enmod proxy_fcgi setenvif
 sudo a2enmod rewrite
-sudo a2enconf php7.1-fpm
+sudo a2enconf php7.4-fpm
 sudo cp /etc/apache2/mods-available/fastcgi.conf /etc/apache2/mods-available/fastcgi.conf.backup
 sudo cp ./stubs/fastcgi.conf -rf /etc/apache2/mods-available/fastcgi.conf
 
@@ -127,7 +132,7 @@ sudo libtool --finish /usr/lib/apache2/modules
 # restart
 echo "$(tput setaf 2)$(tput bold)Restarting services... $(tput sgr 0)"
 sudo service nginx restart
-sudo service php7.1-fpm restart
+sudo service php7.4-fpm restart
 sudo service apache2 restart
 
 # mysql
@@ -147,7 +152,7 @@ sudo chown -R $USER: ~/.composer/
 # node
 echo "$(tput setaf 2)$(tput bold)Install Node... $(tput sgr 0)"
 sudo apt-get -y install build-essential libssl-dev
-sudo curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+sudo curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
@@ -155,16 +160,14 @@ nvm install node # no sudo...
 
 # laravel requirements
 echo "$(tput setaf 2)$(tput bold)Install Laravel requirements... $(tput sgr 0)"
-sudo apt-get -y install redis-server supervisor sqlite3 memcached beanstalkd
-sudo /etc/init.d/beanstalkd start
+sudo apt-get -y install redis-server supervisor sqlite3 memcached
+sudo systemctl enable redis-server
 
 # Let's Encrypt (Using certbot-auto to always have latest version)
 echo "$(tput setaf 2)$(tput bold)Install Let's Encrypt... $(tput sgr 0)"
-sudo wget https://dl.eff.org/certbot-auto
-sudo chmod a+x ./certbot-auto
-sudo mv ./certbot-auto /usr/bin/
+sudo apt-get install -y letsencrypt
 sudo cp ./stubs/cron-certbot /etc/cron.d/certbot
-sudo certbot-auto --install-only --non-interactive
+# sudo certbot --install-only --non-interactive
 
 # Diffie-Hellman Parameters
 echo "$(tput setaf 2)$(tput bold)Generate dhparam.pem... $(tput sgr 0)"
@@ -187,9 +190,9 @@ echo "$(tput setaf 2)$(tput bold)Add Aliases... $(tput sgr 0)"
 echo "alias nah=\"git reset --hard; git clean -df;\"" | sudo tee /etc/profile.d/shared-alias.sh
 
 # Root useful bash
-echo "alias retest=\"sudo apachectl -t; sudo nginx -t;\"" >> ~/.bash_aliases
-echo "alias reload=\"sudo service apache2 reload;sudo service nginx reload;sudo service php7.1-fpm reload; echo 'Services Reloaded';\"" >> ~/.bash_aliases
-echo "alias restart=\"sudo service apache2 restart; sudo service nginx restart; sudo service php7.1-fpm restart; echo 'Services Restarted';\"" >> ~/.bash_aliases
+echo "alias retest=\"sudo apachectl -t; sudo nginx -t; sudo php-fpm7.4 -t;\"" >> ~/.bash_aliases
+echo "alias reload=\"sudo service apache2 reload;sudo service nginx reload;sudo service php7.4-fpm reload; echo 'Services Reloaded';\"" >> ~/.bash_aliases
+echo "alias restart=\"sudo service apache2 restart; sudo service nginx restart; sudo service php7.4-fpm restart; echo 'Services Restarted';\"" >> ~/.bash_aliases
 echo "alias stats=\"landscape-sysinfo\"" >> ~/.bash_aliases
 source ~/.bash_aliases
 
@@ -208,7 +211,7 @@ sudo apt-get -y autoremove
 sudo apt-get -y update
 sudo apt-get -y upgrade
 sudo service nginx restart
-sudo service php7.1-fpm restart
+sudo service php7.4-fpm restart
 sudo service apache2 restart
 
 echo "$(tput setaf 2)$(tput bold)Boom DONE\! $(tput sgr 0)"

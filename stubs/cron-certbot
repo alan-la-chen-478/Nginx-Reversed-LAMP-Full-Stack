@@ -1,2 +1,2 @@
 # Renew Let's Encerypt certificates
-15 3 * * * root /usr/bin/certbot-auto renew --quiet --renew-hook 'service nginx reload'
+15 3 * * * root /usr/bin/certbot renew --quiet --renew-hook 'service nginx reload'

@@ -10,6 +10,6 @@ if [ "$PROTECTED" = true ] ; then
     sudo chmod 0444 $CONF_FILE
 
     sudo nginx -t
-    sudo service php7.1-fpm reload
+    sudo service php7.4-fpm reload
     sudo service nginx reload
 fi

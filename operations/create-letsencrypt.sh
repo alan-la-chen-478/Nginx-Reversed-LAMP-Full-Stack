@@ -2,7 +2,11 @@
 
 if [ "$SSL" = true ] ; then
     echo "$(tput setaf 2)$(tput bold)Creating SSL certificates... $(tput sgr 0)"
-    sudo certbot-auto certonly --nginx -d ${DOMAIN} --agree-tos
+    sudo certbot certonly --nginx -d ${DOMAIN} --agree-tos
+
+    if [ "$WWW" = true ]; then
+        sudo certbot certonly --nginx -d "www.${DOMAIN}" --agree-tos
+    fi
 
     # redirect
     sudo sed -i "s/# server { # SSL/server { # SSL/g" $CONF_FILE
@@ -20,7 +24,7 @@ if [ "$SSL" = true ] ; then
     sudo sed -i "s/# include snippets\/nginx-ssl.conf/include snippets\/nginx-ssl.conf/g" $CONF_FILE
 
     sudo nginx -t
-    sudo service php7.1-fpm reload
+    sudo service php7.4-fpm reload
     sudo service nginx reload
 
     echo "'SSL Certivicates' created."

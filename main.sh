@@ -9,7 +9,7 @@ sudo apt-get -y update
 sudo apt-get -y upgrade
 sudo apt-get -y dist-upgrade
 sudo apt install -y update-manager-core
-sudo do-release-upgrade -d
+sudo do-release-upgrade -f DistUpgradeViewNonInteractive
 
 # secondary user
 # echo "$(tput setaf 2)$(tput bold)Setup secondary sudo user... $(tput sgr 0)"
